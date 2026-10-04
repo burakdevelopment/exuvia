@@ -1,0 +1,13 @@
+[project]
+name = "exuvia"
+version = "0.1.0"
+description = "Agentic lab (Omnigent) for satellite-reentry alumina and stratospheric chlorine activation"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "scipy>=1.11"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["exuvia"]

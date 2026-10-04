@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exuvia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="data.js"></script>
+<script src="sim.js"></script>
+<style>
+:root{--bg:#f4f4f4;--card:#fff;--ink:#161616;--mute:#525252;--faint:#8d8d8d;--line:#e0e0e0;--pri:#0f62fe;--pri-soft:#edf5ff;
+--ok:#198038;--ok-soft:#defbe6;--bad:#da1e28;--bad-soft:#fff1f1;--warn:#8e6a00;--warn-soft:#fcf4d6;--c2:#8a3ffc;--c3:#007d79;--c4:#fa4d56;--band:rgba(15,98,254,.08)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161616;--card:#262626;--ink:#f4f4f4;--mute:#c6c6c6;--faint:#8d8d8d;--line:#393939;--pri:#4589ff;--pri-soft:#001d6c;
+--ok:#42be65;--ok-soft:#044317;--bad:#ff8389;--bad-soft:#520408;--warn:#f1c21b;--warn-soft:#302400;--c2:#a56eff;--c3:#08bdba;--c4:#ff8389;--band:rgba(69,137,255,.12)}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.mono{font-family:'IBM Plex Mono',monospace}
+header{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line)}
+.bar{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:28px;height:56px}
+.brand{font-weight:600;font-size:18px;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--pri);display:inline-block}
+nav{display:flex;gap:2px;overflow-x:auto}
+nav button{border:0;background:none;color:var(--mute);font:inherit;font-size:14px;padding:17px 12px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.on{color:var(--ink);border-bottom-color:var(--pri);font-weight:500}
+main{max-width:1200px;margin:0 auto;padding:32px 16px 72px}
+section{display:none}section.on{display:block}
+h1{font-size:40px;line-height:1.15;font-weight:300;margin:0 0 14px;max-width:820px}
+h2{font-size:22px;font-weight:400;margin:0 0 4px}h3{font-size:15px;font-weight:600;margin:0 0 6px}
+.lead{font-size:18px;color:var(--mute);max-width:720px;margin:0 0 26px;font-weight:300}
+.eyebrow{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--pri);font-weight:600;margin-bottom:10px}
+.sub{color:var(--mute);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);padding:22px}
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}.g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.btn{display:inline-block;border:1px solid var(--pri);background:var(--pri);color:#fff;font:inherit;font-size:14px;padding:11px 18px;cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--pri)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stat b{display:block;font-size:30px;font-weight:300;font-family:'IBM Plex Mono',monospace}.stat span{color:var(--mute);font-size:13px}
+.step{position:relative}.step .n{font-family:'IBM Plex Mono';color:var(--pri);font-size:13px}.step svg{width:44px;height:44px;margin:8px 0 10px;color:var(--pri)}
+.step p{margin:0;color:var(--mute);font-size:14px}
+.pill{display:inline-block;font-size:12px;font-weight:500;padding:2px 9px;border-radius:12px;white-space:nowrap}
+.p-supported{background:var(--ok-soft);color:var(--ok)}.p-falsified{background:var(--bad-soft);color:var(--bad)}.p-inconclusive,.p-pending{background:var(--warn-soft);color:var(--warn)}
+.chip{display:inline-block;border:1px solid var(--line);padding:4px 10px;font-size:13px;background:var(--card)}
+.chip b{font-weight:600}
+.sim{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start}
+@media (max-width:900px){.sim{grid-template-columns:1fr}h1{font-size:30px}}
+.ctl{padding:18px}.ctl h3{margin:18px 0 8px;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--mute);font-weight:600}.ctl h3:first-child{margin-top:0}
+.f{margin:0 0 14px}.f label{display:flex;justify-content:space-between;font-size:13.5px;margin-bottom:4px}.f label span{font-family:'IBM Plex Mono';color:var(--pri);font-size:13px}
+input[type=range]{width:100%;accent-color:var(--pri)}
+.seg{display:flex;border:1px solid var(--line)}.seg button{flex:1;border:0;background:var(--card);color:var(--mute);font:inherit;font-size:13px;padding:7px 4px;cursor:pointer}
+.seg button.on{background:var(--pri);color:#fff}
+.presets{display:grid;grid-template-columns:1fr 1fr;gap:6px}.presets button{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:12.5px;padding:8px;cursor:pointer;text-align:left}
+.presets button:hover{border-color:var(--pri)}
+.kpi{padding:16px}.kpi b{display:block;font-family:'IBM Plex Mono';font-size:26px;font-weight:400}.kpi span{font-size:13px;color:var(--mute)}.kpi small{display:block;color:var(--faint);font-size:12px;margin-top:2px}
+.note{font-size:13px;color:var(--mute)}.insight{border-left:3px solid var(--pri);background:var(--pri-soft);padding:12px 14px;font-size:14px;margin-top:16px}
+.chartbox{position:relative;height:300px}.chartbox.sm{height:260px}
+.loop{display:grid;grid-template-columns:repeat(5,1fr);gap:0;align-items:stretch}
+@media (max-width:900px){.loop{grid-template-columns:1fr}}
+.node{border:1px solid var(--line);background:var(--card);padding:16px;position:relative}.node+.node{border-left:0}
+@media (max-width:900px){.node+.node{border-left:1px solid var(--line);border-top:0}}
+.node .role{font-size:12px;color:var(--pri);font-weight:600;letter-spacing:.6px;text-transform:uppercase}.node p{margin:6px 0 0;font-size:13.5px;color:var(--mute)}
+.hyp{display:flex;gap:12px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--line)}.hyp:last-child{border-bottom:0}
+.hyp .id{font-family:'IBM Plex Mono';font-size:13px;min-width:34px;color:var(--mute);padding-top:1px}.hyp .t{flex:1}.hyp .t div{font-size:13px;color:var(--mute);margin-top:2px}
+.tl{max-height:440px;overflow:auto}.tl .e{display:grid;grid-template-columns:70px 120px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.tl .k{font-size:12px;font-weight:500}.k-preregistration{color:var(--c2)}.k-result{color:var(--pri)}.k-verdict{color:var(--ok)}
+.rec{display:grid;grid-template-columns:1.3fr 1fr;gap:24px}@media (max-width:900px){.rec{grid-template-columns:1fr}}
+.rec .big{font-size:26px;font-weight:300;line-height:1.3;margin:6px 0 12px}
+.facts div{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:9px 0;font-size:14px}.facts div b{font-family:'IBM Plex Mono';font-weight:500}
+table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:500;font-size:12.5px}
+.scroll{overflow-x:auto}
+details{border:1px solid var(--line);background:var(--card);padding:14px 18px;margin-top:16px}summary{cursor:pointer;font-weight:500}
+pre{background:var(--bg);padding:14px;overflow-x:auto;font-size:13px;font-family:'IBM Plex Mono'}
+.mt{margin-top:16px}.mt2{margin-top:32px}
+footer{color:var(--faint);font-size:12.5px;max-width:1200px;margin:0 auto;padding:0 16px 40px}
+</style>
+</head>
+<body>
+<header><div class="bar"><div class="brand"><i></i>Exuvia</div>
+<nav id="nav"><button data-t="overview" class="on">Overview</button><button data-t="simulator">Simulator</button><button data-t="lab">AI Lab</button><button data-t="findings">Findings</button><button data-t="data">Data &amp; methods</button></nav></div></header>
+<main>
+
+<section id="overview" class="on">
+  <div class="eyebrow">Agentic scientific discovery</div>
+  <h1>Dying satellites leave aluminium dust in the stratosphere. Which experiment tells us if it harms the ozone layer?</h1>
+  <p class="lead">Exuvia is an AI research lab. Its agents test hypotheses on a validated physics model and recommend the one real-world measurement that removes the most uncertainty.</p>
+  <div class="row"><button class="btn" data-go="simulator">Try the simulator</button><button class="btn ghost" data-go="findings">See the findings</button></div>
+
+  <div class="grid g4 mt2" id="stats"></div>
+
+  <h2 class="mt2">The problem in four steps</h2>
+  <p class="sub">Why a burnt-up satellite can matter for the ozone layer.</p>
+  <div class="grid g4">
+    <div class="card step"><div class="n">01</div><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><rect x="18" y="18" width="12" height="12"/><path d="M6 20h10v8H6zM32 20h10v8H32z"/><path d="M12 40l8-8M18 44l6-6M6 36l8-8" stroke-dasharray="2 3"/></svg><h3>A satellite burns up</h3><p>At 60–85 km it ablates. About 30% of its aluminium becomes Al₂O₃ dust.</p></div>
+    <div class="card step"><div class="n">02</div><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="14" cy="16" r="3"/><circle cx="30" cy="12" r="2"/><circle cx="24" cy="26" r="4"/><circle cx="36" cy="30" r="2.5"/><circle cx="14" cy="34" r="2"/></svg><h3>Nanoparticles form</h3><p>Their size is unknown: anything from 2 nm to 200 nm is plausible.</p></div>
+    <div class="card step"><div class="n">03</div><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><path d="M24 6v30M16 28l8 8 8-8"/><path d="M4 40h40" stroke-dasharray="3 3"/></svg><h3>They sink to the ozone layer</h3><p>Published models disagree 10×: 30 years or 1–3 years.</p></div>
+    <div class="card step"><div class="n">04</div><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2"><circle cx="24" cy="24" r="10"/><path d="M24 4v6M24 38v6M4 24h6M38 24h6"/><path d="M19 24h10"/></svg><h3>Their surface frees chlorine</h3><p>ClONO₂ + HCl → Cl₂ on the particle, the chemistry behind ozone loss.</p></div>
+  </div>
+
+  <h2 class="mt2">What Exuvia does</h2>
+  <p class="sub">A complete discovery loop. Agents pick experiments; the solver produces every number.</p>
+  <div class="grid g3">
+    <div class="card"><h3>1 · Simulate</h3><p class="note">A 1-D atmosphere model checked against two published studies before any result is trusted.</p></div>
+    <div class="card"><h3>2 · Experiment</h3><p class="note">Agents pre-register each hypothesis with a prediction, run it and accept or reject it.</p></div>
+    <div class="card"><h3>3 · Decide</h3><p class="note">Seven candidate measurements are ranked by how much uncertainty each removes per dollar.</p></div>
+  </div>
+  <div class="row mt"><span class="chip"><b>Pre-registered</b> hypotheses</span><span class="chip"><b>Human-approved</b> recommendations</span><span class="chip"><b>Hash-chained</b> research record</span><span class="chip"><b>No LLM-written</b> numbers</span></div>
+</section>
+
+<section id="simulator">
+  <h2>Run your own world</h2>
+  <p class="sub">Change an assumption and the model reruns in your browser. It is the same physics as the lab's Python solver, line for line.</p>
+  <div class="sim">
+    <div class="card ctl" id="controls">
+      <h3>Scenario</h3>
+      <div class="presets" id="presets"></div>
+      <h3>Particles</h3>
+      <div class="f" data-k="r_med_nm"></div><div class="f" data-k="oxide_fraction"></div><div class="f" data-k="al_ablated_gg_per_yr"></div>
+      <h3>Atmosphere</h3>
+      <div class="f"><label>Transport</label><div class="seg" data-seg="transport"><button data-v="circulation">With circulation</button><button data-v="sedimentation_only">Settling only</button></div></div>
+      <div class="f" data-k="w_meso_mm_s"></div><div class="f" data-k="w_lstrat_mm_s"></div>
+      <h3>Surface chemistry</h3>
+      <div class="f"><label>Sulfate coating</label><div class="seg" data-seg="coating"><button data-v="kinetic">Gradual</button><button data-v="instant">Instant</button><button data-v="none">Never</button></div></div>
+      <div class="f" data-k="tau_coat_days"></div><div class="f" data-k="gamma_alu"></div><div class="f" data-k="theta_hcl"></div><div class="f" data-k="p_sep"></div>
+    </div>
+    <div>
+      <div class="grid g4" id="kpis"></div>
+      <div class="grid g2 mt">
+        <div class="card"><h3>Where the dust ends up</h3><p class="note">Steady-state concentration by altitude. The shaded band is the ozone layer.</p><div class="chartbox"><canvas id="cProfile"></canvas></div></div>
+        <div class="card"><h3>How fast it arrives</h3><p class="note">Share of the final ozone-layer load reached after emissions start. Shaded band: the published 1–3 years.</p><div class="chartbox"><canvas id="cArrive"></canvas></div></div>
+      </div>
+      <div class="insight" id="insight"></div>
+    </div>
+  </div>
+</section>
+
+<section id="lab">
+  <h2>The AI lab</h2>
+  <p class="sub">Five agents orchestrated by Omnigent. Each owns one decision and can only act through tools and policies.</p>
+  <div class="loop">
+    <div class="node"><div class="role">PI</div><h3>Runs the loop</h3><p>States what was learned and picks the next step.</p></div>
+    <div class="node"><div class="role">Researcher</div><h3>Checks evidence</h3><p>Traces every input range to a source and flags weak ones.</p></div>
+    <div class="node"><div class="role">Planner</div><h3>Designs tests</h3><p>Scores ≥2 options and pre-registers the chosen one.</p></div>
+    <div class="node"><div class="role">Runner</div><h3>Runs the solver</h3><p>Executes exactly the registered experiment, in parallel.</p></div>
+    <div class="node"><div class="role">Critic</div><h3>Accepts or rejects</h3><p>Checks units and mass balance and hunts for counterexamples.</p></div>
+  </div>
+  <div class="row mt"><span class="chip">Policy <b>preregistration_gate</b> → DENY</span><span class="chip">Policy <b>human_approval</b> → ASK</span><span class="chip">Policy <b>cost_budget</b> $5</span><span class="chip">Policy <b>max_tool_calls</b> 120</span></div>
+
+  <div class="grid g2 mt2">
+    <div class="card"><h3>Hypotheses tested</h3><p class="note">Every one was pre-registered with a prediction before it ran.</p><div id="hyps"></div></div>
+    <div class="card"><h3>What the agents found on their own</h3>
+      <div class="insight" style="margin-top:8px"><b>The critic caught a flaw in our input range.</b> The descent-speed range we gave (0.075–0.3 mm/s) passes the calibration check only up to 0.19 mm/s. The agents opened H10 to re-test the decision.</div>
+      <div class="insight"><b>The researcher flagged a weak source.</b> The oxide fraction is only documented between 0.20 and 0.32. The agents opened H9.</div>
+      <div class="insight"><b>They refused to over-claim.</b> H6 and H7 were declared inconclusive by their own pre-registered error bars, not forced to a verdict.</div>
+      <div class="insight"><b>Governance held.</b> The session paused when spend crossed the $3 policy threshold and resumed only with approval.</div>
+    </div>
+  </div>
+  <details class="mt"><summary>Live agent session record (<span id="nAgent"></span> hash-chained entries)</summary><div class="tl mt" id="timeline"></div></details>
+</section>
+
+<section id="findings">
+  <div class="card rec">
+    <div><div class="eyebrow">Recommended next measurement</div><div class="big" id="recTitle"></div><p class="note" id="recSpec"></p></div>
+    <div class="facts" id="recFacts"></div>
+  </div>
+  <div class="grid g2 mt">
+    <div class="card"><h3>Which measurement removes the most uncertainty?</h3><p class="note">Share of the uncertainty in chlorine activation each one would remove, under three coating assumptions.</p><div class="chartbox"><canvas id="cMeas"></canvas></div></div>
+    <div class="card"><h3>Why published models disagree 10×</h3><p class="note">The same 4 nm particles with and without atmospheric descent.</p><div class="chartbox"><canvas id="cRecon"></canvas></div></div>
+    <div class="card"><h3>How big is the effect?</h3><p class="note">Extra chlorine activation, % of the natural background (median and 5–95% range).</p><div class="chartbox sm"><canvas id="cStruct"></canvas></div></div>
+    <div class="card"><h3>What drives the uncertainty?</h3><p class="note">Morris screening: a longer bar means more influence.</p><div class="chartbox sm"><canvas id="cMorris"></canvas></div></div>
+    <div class="card"><h3>Did the lab speed things up?</h3><p class="note" id="benchNote"></p><div class="chartbox sm"><canvas id="cBench"></canvas></div></div>
+    <div class="card"><h3>Does the answer survive stress tests?</h3><p class="note">Top recommendation in sub-worlds the agents tried to break it with.</p><div class="scroll"><table id="robust"></table></div></div>
+  </div>
+</section>
+
+<section id="data">
+  <h2>Data &amp; methods</h2>
+  <p class="sub">Everything needed to check or reproduce the results.</p>
+  <div class="card"><h3>Validation gate</h3><div class="scroll"><table id="val"></table></div></div>
+  <div class="card mt"><h3>Uncertain inputs and their sources</h3><div class="scroll"><table id="priors"></table></div></div>
+  <div class="grid g2 mt">
+    <div class="card"><h3>Model in one paragraph</h3><p class="note">1-D high-latitude column from 10 to 92.5 km (33 levels, US Standard Atmosphere 1976) with 8 particle-size bins. It includes Stokes–Cunningham settling, residual-circulation descent, eddy diffusion and tropospheric removal, and tracks bare and sulfate-coated alumina separately. Surface area is S = 3C/(ρr) and activation is k = ¼·c̄·γ·S, compared with the background sulfate. The system is linear, so a run takes about 10 ms.</p></div>
+    <div class="card"><h3>Limits</h3><p class="note">Indicators, not ozone loss. No 3-D transport or coagulation. Calibrated against another model, not observations. Lab rates are sparse (some measured at 296 K). Measurement values are design estimates with hypothetical outcomes.</p></div>
+  </div>
+  <div class="card mt"><h3>References</h3><div class="note" id="refs"></div></div>
+  <div class="card mt"><h3>Reproduce</h3><pre>pip install -e .
+python run_lab.py                       # reference loop → results/, site/data.js
+python scripts/build_omnigent_agents.py
+omnigent run omnigent_lab               # live multi-agent session</pre></div>
+  <details><summary>Reference-run research record (<span id="nRef"></span> entries)</summary><div class="tl mt" id="ledger"></div></details>
+</section>
+</main>
+
+<script>
+const D = window.LAB_DATA, S = window.ExuviaSim;
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C = () => ({pri: css('--pri'), c2: css('--c2'), c3: css('--c3'), c4: css('--c4'), mute: css('--mute'), line: css('--line'), band: css('--band'), ok: css('--ok')});
+Chart.defaults.font.family = "'IBM Plex Sans', sans-serif"; Chart.defaults.font.size = 12;
+Chart.defaults.color = css('--mute'); Chart.defaults.borderColor = css('--line');
+Chart.defaults.plugins.legend.labels.boxWidth = 12; Chart.defaults.maintainAspectRatio = false;
+const fmt = (v, d = 2) => v == null || !isFinite(v) ? '—' : Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(d);
+const pct = v => (v * 100).toFixed(v < 0.1 ? 1 : 0) + '%';
+
+const built = {};
+function show(t) {
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === t));
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  if (!built[t]) { built[t] = true; ({simulator: buildSim, lab: buildLab, findings: buildFindings, data: buildData}[t] || (() => {}))(); }
+  history.replaceState(null, '', '#' + t); window.scrollTo(0, 0);
+}
+document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => show(b.dataset.t));
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => show(b.dataset.go));
+
+const rec = D.recommendation, kin = D.structures.kinetic.activation_ratio_pct;
+$('stats').innerHTML = [
+  [D.validation.checks.filter(c => c.pass).length + '/' + D.validation.checks.length, 'validation checks passed against published studies'],
+  ['~1–2 yr', 'for reentry dust to reach the ozone layer, not 30'],
+  [kin.p50.toFixed(1) + '%', 'median extra chlorine activation (range ' + kin.p5.toFixed(2) + '–' + kin.p95.toFixed(0) + '%)'],
+  [rec.robust_choice_min_regret, 'the next measurement to fund: particle formation'],
+].map(([v, t]) => `<div class="card stat"><b>${v}</b><span>${t}</span></div>`).join('');
+
+const CTRL = {
+  r_med_nm: {label: 'Particle radius', unit: 'nm', min: 2, max: 200, log: true},
+  oxide_fraction: {label: 'Aluminium that becomes oxide', unit: '', min: 0.2, max: 1, pct: true},
+  al_ablated_gg_per_yr: {label: 'Aluminium ablated per year', unit: 'kt', min: 0.1, max: 30, log: true},
+  w_meso_mm_s: {label: 'Descent speed, mesosphere', unit: 'mm/s', min: 0.5, max: 10, log: true},
+  w_lstrat_mm_s: {label: 'Descent speed, lower stratosphere', unit: 'mm/s', min: 0.075, max: 0.3, log: true},
+  tau_coat_days: {label: 'Time to get coated', unit: 'days', min: 1, max: 1000, log: true},
+  gamma_alu: {label: 'Reactivity of bare alumina (γ)', unit: '', min: 1e-4, max: 3e-2, log: true, sci: true},
+  theta_hcl: {label: 'Surface covered by HCl', unit: '', min: 0.05, max: 1, pct: true},
+  p_sep: {label: 'Coated particles that stay separate', unit: '', min: 0, max: 1, pct: true},
+};
+const PRESETS = {
+  'Baseline 2040': {},
+  'Maloney 2025': {al_ablated_gg_per_yr: 10 / (0.32 * 1.8896), r_med_nm: 10},
+  'Ferreira 2024': {r_med_nm: 4, transport: 'sedimentation_only'},
+  'Worst case': {coating: 'none', gamma_alu: 0.03, theta_hcl: 1, r_med_nm: 3},
+};
+let P = {}, charts = {}, timer;
+const toPos = (k, v) => { const c = CTRL[k]; return c.log ? (Math.log(v) - Math.log(c.min)) / (Math.log(c.max) - Math.log(c.min)) : (v - c.min) / (c.max - c.min); };
+const fromPos = (k, x) => { const c = CTRL[k]; return c.log ? Math.exp(Math.log(c.min) + x * (Math.log(c.max) - Math.log(c.min))) : c.min + x * (c.max - c.min); };
+const showV = (k, v) => { const c = CTRL[k]; return c.pct ? Math.round(v * 100) + '%' : c.sci ? v.toExponential(1) : fmt(v, v < 1 ? 3 : 1) + (c.unit ? ' ' + c.unit : ''); };
+
+function buildSim() {
+  $('presets').innerHTML = Object.keys(PRESETS).map(n => `<button data-p="${n}">${n}</button>`).join('');
+  document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => setPreset(b.dataset.p));
+  document.querySelectorAll('.f[data-k]').forEach(el => {
+    const k = el.dataset.k;
+    el.innerHTML = `<label>${CTRL[k].label}<span id="v_${k}"></span></label><input type="range" min="0" max="1000" id="s_${k}">`;
+    $('s_' + k).oninput = e => { P[k] = fromPos(k, e.target.value / 1000); $('v_' + k).textContent = showV(k, P[k]); rerun(); };
+  });
+  document.querySelectorAll('[data-seg]').forEach(seg => seg.querySelectorAll('button').forEach(b => b.onclick = () => { P[seg.dataset.seg] = b.dataset.v; syncSeg(); rerun(); }));
+  const c = C();
+  const bandPlugin = {id: 'band', beforeDatasetsDraw(ch, a, o) {
+    const {ctx, chartArea: ca, scales} = ch; ctx.save(); ctx.fillStyle = c.band;
+    if (o.y) { const y1 = scales.y.getPixelForValue(o.y[1]), y0 = scales.y.getPixelForValue(o.y[0]); ctx.fillRect(ca.left, y1, ca.right - ca.left, y0 - y1); }
+    if (o.x) { const x0 = scales.x.getPixelForValue(o.x[0]), x1 = scales.x.getPixelForValue(o.x[1]); ctx.fillRect(x0, ca.top, x1 - x0, ca.bottom - ca.top); }
+    ctx.restore(); }};
+  charts.profile = new Chart($('cProfile'), {type: 'scatter', plugins: [bandPlugin], data: {datasets: [
+    {label: 'All alumina', showLine: true, pointRadius: 0, borderColor: c.pri, borderWidth: 2, data: []},
+    {label: 'Bare (uncoated)', showLine: true, pointRadius: 0, borderColor: c.c4, borderWidth: 2, borderDash: [5, 4], data: []}]},
+    options: {plugins: {band: {y: [15, 30]}}, scales: {x: {type: 'logarithmic', title: {display: true, text: 'concentration (ng/m³)'}}, y: {min: 10, max: 90, title: {display: true, text: 'altitude (km)'}}}}});
+  charts.arrive = new Chart($('cArrive'), {type: 'scatter', plugins: [bandPlugin], data: {datasets: [
+    {label: 'This world', showLine: true, pointRadius: 0, borderColor: c.pri, borderWidth: 2, data: []}]},
+    options: {plugins: {band: {x: [1, 3]}, legend: {display: false}}, scales: {x: {min: 0, max: 20, title: {display: true, text: 'years after emissions start'}}, y: {min: 0, max: 1, ticks: {callback: v => v * 100 + '%'}}}}});
+  setPreset('Baseline 2040');
+}
+function syncSeg() { document.querySelectorAll('[data-seg]').forEach(seg => seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', P[seg.dataset.seg] === b.dataset.v))); }
+function setPreset(n) {
+  P = Object.assign({}, S.DEFAULTS, PRESETS[n]);
+  Object.keys(CTRL).forEach(k => { $('s_' + k).value = Math.round(toPos(k, P[k]) * 1000); $('v_' + k).textContent = showV(k, P[k]); });
+  document.querySelectorAll('[data-p]').forEach(b => b.style.borderColor = b.dataset.p === n ? css('--pri') : '');
+  syncSeg(); rerun(0);
+}
+function rerun(delay = 60) { clearTimeout(timer); timer = setTimeout(simulate, delay); }
+function simulate() {
+  const r = S.run(P), pr = r.profiles;
+  $('kpis').innerHTML = [
+    [fmt(r.arrival_t50_yr, 1) + ' yr', 'to reach the ozone layer', 'half of final load; 10% after ' + fmt(r.arrival_t10_yr, 1) + ' yr'],
+    [fmt(r.burden_10_30km_gg, 2) + ' kt', 'alumina held at 10–30 km', 'input ' + fmt(r.alumina_gg_per_yr, 2) + ' kt/yr'],
+    [fmt(r.activation_ratio * 100, 2) + '%', 'extra chlorine activation', 'relative to natural sulfate'],
+    [pct(r.activation_bare_share), 'happens on bare alumina', 'the rest on coated particles'],
+  ].map(([v, t, s]) => `<div class="card kpi"><b>${v}</b><span>${t}</span><small>${s}</small></div>`).join('');
+  charts.profile.data.datasets[0].data = pr.z_km.map((z, i) => ({x: Math.max(pr.alumina_ug_m3[i] * 1e3, 1e-6), y: z}));
+  charts.profile.data.datasets[1].data = pr.z_km.map((z, i) => ({x: Math.max(pr.bare_ug_m3[i] * 1e3, 1e-6), y: z}));
+  charts.profile.update('none');
+  const tMax = r.arrival_t50_yr > 15 ? 80 : 20;
+  charts.arrive.options.scales.x.max = tMax;
+  charts.arrive.data.datasets[0].data = pr.t_yr.filter(t => t <= tMax).map((t, i) => ({x: t, y: pr.fill[i]}));
+  charts.arrive.update('none');
+  const inBand = r.arrival_t50_yr >= 1 && r.arrival_t50_yr <= 3;
+  $('insight').innerHTML = `In this world the dust reaches the ozone layer in <b>${fmt(r.arrival_t50_yr, 1)} years</b> (${inBand ? 'inside' : 'outside'} the published 1–3 yr range) and adds <b>${fmt(r.activation_ratio * 100, 2)}%</b> to natural chlorine activation, <b>${pct(r.activation_bare_share)}</b> of it on bare alumina. ` +
+    (r.activation_bare_share > 0.5 ? 'Bare-surface chemistry dominates here, so a cold-temperature γ measurement would matter most.' : 'Coated particles dominate here, so how big the particles are at birth matters more than bare-surface chemistry.');
+}
+
+const TITLES = {H1: 'Fast sulfate coating makes bare-alumina chemistry minor', H2: 'Bare alumina surfaces dominate activation', H3: 'HCl availability limits activation',
+  H4: 'Particle size is the single top driver', H5: 'Transport timing controls activation', G1: 'Solver reproduces published benchmarks',
+  H6: 'Particle formation leads the screening', H7: 'Coating choice matters only in the tail', H8: 'Recommendation is robust to the coating model',
+  H9: 'Robust to the weakly sourced oxide fraction', H10: "Robust to the critic's calibration finding"};
+function buildLab() {
+  const ref = Object.entries(D.verdicts).map(([id, v]) => ({id, status: v.status, ev: v.evidence, who: 'reference loop'}));
+  const ag = (D.agent_hypotheses || []).map(h => ({id: h.id, status: h.status, ev: h.evidence || '', who: 'agent-generated'}));
+  $('hyps').innerHTML = [...ref, ...ag].map(h => `<div class="hyp"><div class="id">${h.id}</div><div class="t">${TITLES[h.id] || h.id}<div>${h.who}${h.ev ? ' · ' + h.ev : ''}</div></div><span class="pill p-${h.status}">${h.status}</span></div>`).join('');
+  const A = D.agent_session || [];
+  $('nAgent').textContent = A.length;
+  $('timeline').innerHTML = A.map(e => `<div class="e"><span class="mono">${e.ts.slice(11)}</span><span class="k k-${e.kind}">${e.kind}</span><span>${e.text.length > 220 ? e.text.slice(0, 220) + '…' : e.text}</span></div>`).join('');
+}
+
+function buildFindings() {
+  const c = C(), m = rec.measurement, kr = D.rankings.kinetic.find(r => r.id === m.id), ir = D.rankings.instant.find(r => r.id === m.id);
+  const m1 = D.rankings.kinetic.find(r => r.id === 'M1');
+  $('recTitle').textContent = m.name;
+  $('recSpec').textContent = rec.spec;
+  $('recFacts').innerHTML = [
+    ['Uncertainty removed', pct(kr.variance_removed) + ' – ' + pct(ir.variance_removed)],
+    ['Robust across coating models', 'yes (regret 0)'],
+    ['Robust in stress-test worlds', D.counterexamples.filter(w => w.top === m.id).length + ' / ' + D.counterexamples.length],
+    ['Intuitive choice (cold γ, M1)', pct(m1.variance_removed)],
+    ['Indicative cost', '$' + m.cost_k + 'k lab study'],
+    ['Status', 'awaiting scientist approval'],
+  ].map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join('');
+
+  const ids = D.rankings.kinetic.map(r => r.id);
+  const names = {M1: 'M1 cold γ on bare alumina', M2: 'M2 coating kinetics', M3: 'M3 particle formation', M4: 'M4 HCl coverage', M5: 'M5 aircraft sampling', M6: 'M6 descent rate', M7: 'M7 γ on sulfate'};
+  const col = {kinetic: c.pri, instant: c.c2, none: c.c3}, lab = {kinetic: 'gradual coating', instant: 'instant coating', none: 'never coated'};
+  new Chart($('cMeas'), {type: 'bar', data: {labels: ids.map(i => names[i]), datasets: Object.keys(col).map(s => ({label: lab[s], backgroundColor: col[s],
+    data: ids.map(i => D.rankings[s].find(r => r.id === i).variance_removed * 100)}))},
+    options: {indexAxis: 'y', scales: {x: {max: 100, ticks: {callback: v => v + '%'}}}}});
+  const rc = D.reconciliation_curves;
+  new Chart($('cRecon'), {type: 'scatter', data: {datasets: [
+    {label: 'with atmospheric descent (Maloney 2025)', showLine: true, pointRadius: 0, borderColor: c.pri, borderWidth: 2, data: rc.t_yr.map((t, i) => ({x: t, y: rc.circulation[i]}))},
+    {label: 'settling only (Ferreira 2024)', showLine: true, pointRadius: 0, borderColor: c.c4, borderWidth: 2, data: rc.t_yr.map((t, i) => ({x: t, y: rc.sedimentation_only[i]}))}]},
+    options: {scales: {x: {min: 0, max: 60, title: {display: true, text: 'years'}}, y: {min: 0, max: 1, ticks: {callback: v => v * 100 + '%'}}}}});
+  const st = D.structures, sk = ['kinetic', 'instant', 'none'];
+  new Chart($('cStruct'), {type: 'bar', data: {labels: sk.map(s => lab[s]), datasets: [
+    {label: '5–95% range', data: sk.map(s => [st[s].activation_ratio_pct.p5, st[s].activation_ratio_pct.p95]), backgroundColor: c.pri + '40', borderColor: c.pri, borderWidth: 1},
+    {label: 'median', type: 'scatter', data: sk.map(s => ({x: st[s].activation_ratio_pct.p50, y: lab[s]})), backgroundColor: c.c4, pointRadius: 6}]},
+    options: {indexAxis: 'y', scales: {x: {type: 'logarithmic', title: {display: true, text: '% of background'}}}}});
+  const pretty = {r_med_nm: 'particle radius', sigma_g: 'size spread', oxide_fraction: 'oxide fraction', w_meso_mm_s: 'descent, mesosphere', w_lstrat_mm_s: 'descent, lower strat.',
+    tau_coat_days: 'coating time', p_sep: 'coated stay separate', gamma_alu: 'γ bare alumina', theta_hcl: 'HCl coverage', gamma_sulf: 'γ sulfate'};
+  const mu = D.screening.mu_star, mk = Object.keys(mu).sort((a, b) => mu[b] - mu[a]);
+  new Chart($('cMorris'), {type: 'bar', data: {labels: mk.map(k => pretty[k]), datasets: [{data: mk.map(k => mu[k]), backgroundColor: c.pri}]}, options: {indexAxis: 'y', plugins: {legend: {display: false}}}});
+  const b = D.benchmark, bud = Object.keys(b.success_rate.random).map(Number), bl = {random: 'random sampling', lhs: 'Latin hypercube', screen_then_focus: 'agent strategy'};
+  const bc = {random: c.c4, lhs: c.mute, screen_then_focus: c.pri};
+  new Chart($('cBench'), {type: 'line', data: {labels: bud, datasets: Object.keys(bl).map(s => ({label: bl[s], borderColor: bc[s], backgroundColor: bc[s], data: bud.map(x => b.success_rate[s][x] * 100)}))},
+    options: {scales: {x: {title: {display: true, text: 'solver runs'}}, y: {min: 0, max: 100, ticks: {callback: v => v + '%'}, title: {display: true, text: 'right decision'}}}}});
+  $('benchNote').innerHTML = `Honest answer: <b>${b.speedup_vs_random.toFixed(1)}×</b> in solver runs on a 10 ms model. Every strategy needs ~200 runs. The gain is the whole validated loop in ${D.runtime_s} s; it pays off when each run is an hours-long 3-D model.`;
+  const worlds = [...D.counterexamples.map(w => [w.world, w.top]),
+    ...(D.agent_hypotheses || []).filter(h => ['H9', 'H10'].includes(h.id)).map(h => [h.id === 'H9' ? 'oxide fraction limited to sourced 0.20–0.32' : 'descent limited to calibrated 0.08–0.19 mm/s', h.status === 'supported' ? 'M3' : '≠ M3'])];
+  $('robust').innerHTML = '<tr><th>Sub-world</th><th>Top measurement</th></tr>' + worlds.map(([w, t]) => `<tr><td>${w}</td><td><b class="mono">${t}</b></td></tr>`).join('');
+}
+
+function buildData() {
+  $('val').innerHTML = '<tr><th>Check</th><th>Published reference</th><th>Exuvia model</th><th>Role</th><th></th></tr>' +
+    D.validation.checks.map(c => `<tr><td class="mono">${c.id}</td><td>${c.reference}</td><td class="mono">${c.model}</td><td>${c.role}</td><td><span class="pill p-${c.pass ? 'supported' : 'falsified'}">${c.pass ? 'pass' : 'fail'}</span></td></tr>`).join('');
+  $('priors').innerHTML = '<tr><th>Input</th><th>Range</th><th>Source</th></tr>' +
+    Object.entries(D.priors).map(([k, v]) => `<tr><td class="mono">${k}</td><td class="mono">${v.range.join(' – ')}</td><td>${v.source}</td></tr>`).join('');
+  const refs = [['Ferreira et al. 2024, GRL', '10.1029/2024GL109280'], ['Maloney et al. 2025, JGR Atmospheres', '10.1029/2024JD042442'], ['Barker et al. 2026, Earth\'s Future', '10.1029/2025EF007229'],
+    ['Lostier et al. 2026, ACS Earth Space Chem.', '10.1021/acsearthspacechem.6c00142'], ['Vattioni et al. 2023, GRL', ''], ['Murphy et al. 2023, PNAS', ''], ['Molina et al. 1997, GRL', '']];
+  $('refs').innerHTML = refs.map(([t, d]) => d ? `<div>${t} · <a href="https://doi.org/${d}" target="_blank" rel="noopener">doi:${d}</a></div>` : `<div>${t}</div>`).join('');
+  $('nRef').textContent = D.ledger.length;
+  $('ledger').innerHTML = D.ledger.map(e => `<div class="e"><span class="mono">${e.ts.slice(11)}</span><span class="k k-${e.kind}">${e.kind}</span><span class="mono">${e.hash} ← ${e.prev}</span></div>`).join('');
+}
+
+const start = (location.hash || '#overview').slice(1);
+show(['overview', 'simulator', 'lab', 'findings', 'data'].includes(start) ? start : 'overview');
+</script>
+</body>
+</html>

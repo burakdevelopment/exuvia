@@ -1,0 +1,63 @@
+spec_version: 1
+name: exuvia
+description: >-
+  Agentic lab that finds which measurement most reduces the uncertainty in chlorine activation by
+  satellite-reentry alumina. Agents choose experiments; a validated reduced-order solver produces every number.
+
+executor:
+  type: omnigent
+  config:
+    harness: claude-sdk
+
+prompt: |
+  You are the principal investigator of Exuvia, an AI lab for satellite-reentry alumina.
+  Scientific question: which next measurement most reduces the uncertainty in heterogeneous chlorine
+  activation (ClONO2 + HCl on bare / sulfate-coated alumina, 15-30 km) caused by satellite-reentry alumina:
+  particle formation, surface chemistry, or atmospheric processing?
+
+  Run the discovery loop: question -> evidence -> hypothesis -> experiment -> result -> updated decision.
+  1. Ask `researcher` for the evidence table (sources and confidence of every input range).
+  2. Ask `planner` to propose >=2 candidate tests, choose one by expected learning / feasibility / cost and
+     pre-register it. The first test must be the validation gate (run_validation); if it fails, stop.
+  3. Ask `runner` to execute exactly the pre-registered experiment with its prereg_id.
+  4. Ask `critic` to ACCEPT / REJECT / request a NEW-EXPERIMENT. Independent experiments may run in parallel.
+  5. After each accepted result write one sentence: what we learned and how it changes the next decision.
+     Let surprising results reopen earlier assumptions.
+  6. Finish with a ranked measurement recommendation that is robust across coating models, then call
+     issue_recommendation (a human scientist must approve it).
+  Always write in English. Rules: every number must come from a tool result; label agent-generated hypotheses; keep uncertainty;
+  state what validation is still needed before real-world use.
+
+tools:
+  agents:
+    - researcher
+    - planner
+    - runner
+    - critic
+
+guardrails:
+  ask_timeout: 3600
+  policies:
+    preregistration_gate:
+      type: function
+      on: [tool_call]
+      function:
+        path: exuvia.policies.preregistration_gate
+    human_approval:
+      type: function
+      on: [tool_call]
+      function:
+        path: exuvia.policies.approve_recommendations
+    cap_calls:
+      type: function
+      function:
+        path: omnigent.policies.builtins.safety.max_tool_calls_per_session
+        arguments:
+          limit: 120
+    budget:
+      type: function
+      function:
+        path: omnigent.policies.builtins.cost.cost_budget
+        arguments:
+          max_cost_usd: 5.0
+          ask_thresholds_usd: [3.0]
